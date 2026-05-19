@@ -123,3 +123,15 @@ Goal: simulate stablecoin deposits, exchange, spread revenue, and crypto-denomin
 The simulation extends immutable ledgers with `sim_usdt` and `sim_usdc`, adds public-readable `crypto_exchange_rates`, records spread into append-only `crypto_spread_revenue`, exposes authenticated `POST /functions/v1/exchange-crypto`, and adds `/tick/crypto` to the economy engine.
 
 Gate: migration `011_sim_crypto.sql` applies cleanly, exchange rates are readable, `/tick/crypto` updates rates with a valid secret and rejects unauthenticated calls, players can exchange clean cash into simulated stablecoin through the Edge Function, insufficient balances fail, spoofed player IDs are ignored, and spread revenue is traceable. Verified against cloud Supabase with tick `c642d9eb-a955-4802-882f-b25a85dffb39`, which updated all 6 exchange-rate pairs. The crypto test exchanged 1000 `cash_clean` for 981 `sim_usdt`, confirmed insufficient-balance failure, and wrote traceable `crypto_exchange` and `crypto_spread_revenue` rows.
+
+## Phase 12: Police Heat and Enforcement
+
+Status: implemented and cloud-verified.
+
+Goal: turn heat and crime pressure into readable economic enforcement without arbitrary client-side punishment.
+
+The police tick reads district heat, crime pressure, and security, then updates `police_presence`, `checkpoint_level`, and checkpoint-driven `supply_disruption` through the service-role-only `apply_police_district_update` RPC. Significant patrol or checkpoint changes append immutable `police_incidents` rows. Agents now consider police and checkpoint pressure when deciding whether to migrate.
+
+Players can call `POST /functions/v1/bribe-police` to reduce existing `player_heat` in a district. The Edge Function derives the player from the JWT, forwards the caller auth context to `bribe_police`, and ignores any spoofed `player_id` in the body. The database deducts clean cash through `wallet_ledger`, records a `bribe` transaction, updates `player_heat`, and writes `bribe_events`.
+
+Gate: migration `012_police_heat.sql` applies cleanly, `/tick/police` rejects missing secrets and updates district enforcement with a valid secret, bribes reduce player heat while deducting clean cash, insufficient funds fail, spoofed player IDs are ignored, and police/bribe logs are immutable. Verified against cloud Supabase with tick `81639d6e-1056-4355-9f80-185cd3b20d3d`, which updated all 5 districts and wrote police incidents. The bribe test reduced Port player heat from 20 to 15, deducted 500 `cash_clean`, wrote one `bribe` transaction, one `police_bribe` ledger row, and one `bribe_events` row.

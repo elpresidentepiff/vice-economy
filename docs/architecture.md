@@ -53,7 +53,8 @@ The Phase 4 economy engine is a Node.js service intended for Railway. It exposes
 - `POST /tick/npc`: protected NPC cohort simulation tick.
 - `POST /tick/agents`: protected individual agent economy tick.
 - `POST /tick/crypto`: protected simulated crypto exchange-rate tick.
-- `POST /tick/all`: protected combined market, district, NPC, agents, crypto, and laundering tick.
+- `POST /tick/police`: protected police heat and checkpoint tick.
+- `POST /tick/all`: protected combined market, district, NPC, agents, police, crypto, and laundering tick.
 
 The engine uses the Supabase service-role key because it is a trusted server worker, not a client proxy. It writes market price changes directly and records every change in `market_price_history` with a shared `tick_id`.
 
@@ -141,6 +142,27 @@ flowchart LR
 ```
 
 The economy engine's `/tick/crypto` endpoint performs a small bounded random walk on active exchange rates through `apply_crypto_rate_update`.
+
+## Police Heat
+
+Phase 12 makes heat operational without spawning arbitrary police. Enforcement is district-level economic pressure.
+
+NPC and world-event ticks change district `heat_level` and `crime_pressure`. The economy engine runs `/tick/police`, calculates `police_presence` and `checkpoint_level`, and writes the district update through `apply_police_district_update`. Checkpoints raise `supply_disruption`, so the next district price tick can make local goods more expensive.
+
+Players can reduce existing personal heat through `POST /functions/v1/bribe-police`. The Edge Function validates the JWT, then invokes `bribe_police` while forwarding the caller's authorization header. Postgres verifies `p_player_id = auth.uid()`, serializes the player's wallet mutation, inserts a negative `cash_clean` ledger row, records a `bribe` transaction, lowers `player_heat`, and appends `bribe_events`.
+
+```mermaid
+flowchart LR
+  Districts["district heat and crime"] --> PoliceTick["police tick"]
+  PoliceTick --> RPC["apply_police_district_update"]
+  RPC --> Enforcement["district police and checkpoints"]
+  Enforcement --> Prices["district supply disruption"]
+  Client["Game client"] --> BribeEdge["bribe-police Edge Function"]
+  BribeEdge --> BribeRPC["public.bribe_police"]
+  BribeRPC --> Ledger["wallet_ledger append"]
+  BribeRPC --> Heat["player_heat update"]
+  BribeRPC --> Bribes["bribe_events append"]
+```
 
 ## Trust Boundaries
 

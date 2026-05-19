@@ -8,7 +8,7 @@ Money first. The first deliverable is a secure economy database where authentica
 
 ## Current Scope
 
-This repository currently implements Phase 0 through Phase 11-Sim:
+This repository currently implements Phase 0 through Phase 12:
 
 - Monorepo structure
 - Supabase core schema migration
@@ -26,6 +26,7 @@ This repository currently implements Phase 0 through Phase 11-Sim:
 - Text-only Unreal integration plugin and REST smoke test
 - Agent economy MVP with `/tick/agents`
 - Simulated stablecoin exchange with `/tick/crypto` and `POST /functions/v1/exchange-crypto`
+- Police heat enforcement with `/tick/police` and `POST /functions/v1/bribe-police`
 
 Out of scope for this phase:
 
@@ -123,6 +124,18 @@ curl -X POST "$SUPABASE_URL/functions/v1/exchange-crypto" \
 
 Only `cash_clean`, `sim_usdt`, and `sim_usdc` are exchangeable in the simulation. Dirty cash cannot be exchanged into crypto in Phase 11-Sim.
 
+Police bribes use the same JWT-preserving pattern:
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/bribe-police" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"district_id":"port","amount":500,"player_id":"spoofed-id-is-ignored"}'
+```
+
+The bribe RPC deducts `cash_clean` through `wallet_ledger`, records a `bribe` transaction, lowers existing `player_heat`, and writes an immutable `bribe_events` row.
+
 ## Economy Engine
 
 Run locally:
@@ -187,6 +200,13 @@ curl -X POST http://localhost:3000/tick/crypto \
   -H "x-tick-secret: replace-me"
 ```
 
+Police tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/police \
+  -H "x-tick-secret: replace-me"
+```
+
 Combined tick:
 
 ```bash
@@ -225,4 +245,6 @@ See `docs/unreal-integration-guide.md` for setup.
 - Agent wallet ledgers and action logs are append-only.
 - Simulated crypto balances are ledger currencies, not mutable wallet fields.
 - Exchange spread revenue is recorded in `crypto_spread_revenue`; clients cannot read or write that table.
+- Police pressure is a district-level economic modifier. Clients can read district police state and incidents, but only the economy engine can update enforcement.
+- Player heat and bribe events are player-readable only. Bribes are clean-cash ledger sinks and cannot spoof `player_id`.
 - Economy engine runs are tracked in `system_jobs`.

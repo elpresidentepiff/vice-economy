@@ -111,3 +111,15 @@ Stablecoin mechanics will begin with simulated ledger currencies only. Real USDC
 ## 028: Dirty Cash Cannot Enter Crypto in Phase 11-Sim
 
 Only `cash_clean`, `sim_usdt`, and `sim_usdc` are exchangeable. Dirty-cash to crypto flows are deferred because they need stronger risk controls and game-balance gates.
+
+## 029: Police Heat Is Economic Pressure
+
+Police response changes district `police_presence`, `checkpoint_level`, and `supply_disruption`. The first implementation avoids teleporting enforcement into player wallets; it makes crime pressure readable through prices, disruption, incidents, and player heat.
+
+## 030: Bribes Preserve Auth Context
+
+`bribe-police` validates the JWT with a service-role client but invokes `bribe_police` with the caller's authorization header. The database remains responsible for the `auth.uid()` guard and the immutable clean-cash ledger sink.
+
+## 031: Player Heat Is Separate From District Heat
+
+District `heat_level` drives public enforcement pressure. `player_heat` is per-player and per-district, readable only by that player, and can only be mutated by trusted database functions or service-role setup paths.

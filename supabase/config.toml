@@ -6,3 +6,6 @@ verify_jwt = true
 
 [functions.exchange-crypto]
 verify_jwt = true
+
+[functions.bribe-police]
+verify_jwt = true

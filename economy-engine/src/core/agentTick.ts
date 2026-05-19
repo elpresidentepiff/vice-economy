@@ -18,6 +18,8 @@ type District = {
   heat_level: number;
   crime_pressure: number;
   demand_multiplier: number | string;
+  police_presence: number;
+  checkpoint_level: number;
 };
 
 type AgentBalance = {
@@ -52,7 +54,8 @@ function inventoryKey(agentId: string, itemId: string): string {
 }
 
 function saferDistrictFor(agent: Agent, district: District): string | null {
-  if (district.heat_level <= 70 || Number(agent.ambition) <= 0.5) {
+  const enforcementPressure = Math.max(district.heat_level, district.police_presence, district.checkpoint_level);
+  if (enforcementPressure <= 70 || Number(agent.ambition) <= 0.5) {
     return null;
   }
 
@@ -177,7 +180,7 @@ export async function agentTick(): Promise<AgentTickResult> {
 
   const { data: districtData, error: districtError } = await supabaseAdmin
     .from("districts")
-    .select("district_id, heat_level, crime_pressure, demand_multiplier");
+    .select("district_id, heat_level, crime_pressure, demand_multiplier, police_presence, checkpoint_level");
 
   if (districtError) {
     throw new Error(`Failed to fetch districts for agents: ${districtError.message}`);

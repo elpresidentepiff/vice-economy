@@ -11,6 +11,7 @@
     "test:buy-item": "tsx scripts/test-buy-item-http.ts",
     "test:agents": "tsx scripts/test-agents.ts",
     "test:crypto": "tsx scripts/test-crypto.ts",
+    "test:police": "tsx scripts/test-police.ts",
     "test:unreal-integration": "tsx scripts/test-unreal-integration.ts"
   },
   "devDependencies": {
