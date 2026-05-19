@@ -29,10 +29,10 @@ Deliverables:
 - Extend ledger and transaction currency constraints
 - `crypto_exchange_rates`
 - `crypto_spread_revenue`
-- `exchange_crypto` RPC
+- `exchange_currency` RPC
 - `exchange-crypto` Edge Function
 - `/tick/crypto` oracle simulation endpoint
-- `scripts/test-crypto-exchange.ts`
+- `scripts/test-crypto.ts`
 
 Rules:
 
@@ -53,7 +53,7 @@ Gate:
 
 ## Exchange Model
 
-Example: clean cash to simulated USDC.
+Example: clean cash to simulated USDC. All values are integer minor units; in Phase 11-Sim, simulated stablecoin minor units start near 1:1 with clean cash minor units.
 
 1. Player requests `cash_clean -> sim_usdc`.
 2. RPC locks the player with the existing advisory-lock pattern.

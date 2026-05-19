@@ -3,3 +3,6 @@ verify_jwt = true
 
 [functions.start-laundering]
 verify_jwt = true
+
+[functions.exchange-crypto]
+verify_jwt = true

@@ -8,7 +8,7 @@ Money first. The first deliverable is a secure economy database where authentica
 
 ## Current Scope
 
-This repository currently implements Phase 0 through Phase 8:
+This repository currently implements Phase 0 through Phase 11-Sim:
 
 - Monorepo structure
 - Supabase core schema migration
@@ -25,6 +25,7 @@ This repository currently implements Phase 0 through Phase 8:
 - NPC cohort demand simulation with `/tick/npc`
 - Text-only Unreal integration plugin and REST smoke test
 - Agent economy MVP with `/tick/agents`
+- Simulated stablecoin exchange with `/tick/crypto` and `POST /functions/v1/exchange-crypto`
 
 Out of scope for this phase:
 
@@ -62,7 +63,7 @@ npm install
 npm run build
 ```
 
-The economy engine is still a placeholder. It exists so the repository has a build gate before service logic is added in a later phase.
+The economy engine builds the TypeScript heartbeat service used by market, district, NPC, agent, laundering, and simulated crypto ticks.
 
 ## Supabase Migration
 
@@ -109,6 +110,18 @@ curl -X POST "$SUPABASE_URL/functions/v1/start-laundering" \
   -H "Content-Type: application/json" \
   -d '{"business_id":"...","amount":5000,"player_id":"spoofed-id-is-ignored"}'
 ```
+
+Simulated crypto exchange also preserves the caller's JWT context:
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/exchange-crypto" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"from_currency":"cash_clean","to_currency":"sim_usdt","amount":1000,"player_id":"spoofed-id-is-ignored"}'
+```
+
+Only `cash_clean`, `sim_usdt`, and `sim_usdc` are exchangeable in the simulation. Dirty cash cannot be exchanged into crypto in Phase 11-Sim.
 
 ## Economy Engine
 
@@ -167,6 +180,13 @@ curl -X POST http://localhost:3000/tick/agents \
   -H "x-tick-secret: replace-me"
 ```
 
+Crypto rate tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/crypto \
+  -H "x-tick-secret: replace-me"
+```
+
 Combined tick:
 
 ```bash
@@ -203,4 +223,6 @@ See `docs/unreal-integration-guide.md` for setup.
 - NPC tick logs are append-only.
 - Agents have separate immutable wallets and inventories; player wallet auth is not weakened for autonomous engine actions.
 - Agent wallet ledgers and action logs are append-only.
+- Simulated crypto balances are ledger currencies, not mutable wallet fields.
+- Exchange spread revenue is recorded in `crypto_spread_revenue`; clients cannot read or write that table.
 - Economy engine runs are tracked in `system_jobs`.

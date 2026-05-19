@@ -52,7 +52,8 @@ The Phase 4 economy engine is a Node.js service intended for Railway. It exposes
 - `POST /tick/district`: protected district-price tick.
 - `POST /tick/npc`: protected NPC cohort simulation tick.
 - `POST /tick/agents`: protected individual agent economy tick.
-- `POST /tick/all`: protected combined market, district, NPC, agents, and laundering tick.
+- `POST /tick/crypto`: protected simulated crypto exchange-rate tick.
+- `POST /tick/all`: protected combined market, district, NPC, agents, crypto, and laundering tick.
 
 The engine uses the Supabase service-role key because it is a trusted server worker, not a client proxy. It writes market price changes directly and records every change in `market_price_history` with a shared `tick_id`.
 
@@ -119,6 +120,27 @@ flowchart LR
 ```
 
 This keeps autonomous simulation separate from player authorization while preserving immutable economic records.
+
+## Simulated Stablecoin
+
+Phase 11-Sim adds `sim_usdt` and `sim_usdc` as ledger currencies. They are not real blockchain assets; they are minor-unit balances derived from immutable `wallet_ledger` rows.
+
+Players call `POST /functions/v1/exchange-crypto` with exchange intent. The Edge Function validates the JWT with a service-role client, then calls `exchange_currency` with a publishable client and the caller's `Authorization` header. Postgres still verifies `p_player_id = auth.uid()`.
+
+The private exchange implementation serializes per-player money movement with the same advisory-lock pattern used by purchases and laundering. It reads `crypto_exchange_rates`, applies spread basis points, inserts a `crypto_exchange` transaction, appends source and target ledger rows, and writes `crypto_spread_revenue`.
+
+```mermaid
+flowchart LR
+  Client["Game client"] --> Edge["exchange-crypto Edge Function"]
+  Edge --> Auth["Supabase Auth getUser"]
+  Edge --> RPC["public.exchange_currency"]
+  RPC --> Rates["crypto_exchange_rates"]
+  RPC --> Ledger["wallet_ledger append"]
+  RPC --> Tx["transactions append"]
+  RPC --> Spread["crypto_spread_revenue append"]
+```
+
+The economy engine's `/tick/crypto` endpoint performs a small bounded random walk on active exchange rates through `apply_crypto_rate_update`.
 
 ## Trust Boundaries
 

@@ -99,3 +99,15 @@ Player RPCs depend on `auth.uid()` and must stay client-authenticated. The econo
 ## 025: Stablecoins Start Simulated
 
 Stablecoin mechanics will begin with simulated ledger currencies only. Real USDC or USDT movement requires testnet validation, reconciliation, legal review, and explicit production gates.
+
+## 026: Simulated Stablecoin Uses Minor Units
+
+`sim_usdt` and `sim_usdc` are stored as integer minor units in the immutable ledgers. Initial simulated rates are near 1:1 with `cash_clean` minor units, and spread is applied in basis points.
+
+## 027: Crypto Exchange Preserves Auth Context
+
+`exchange-crypto` validates the JWT with a service-role client but invokes `exchange_currency` with the caller's authorization header. The database remains responsible for the `auth.uid()` player guard.
+
+## 028: Dirty Cash Cannot Enter Crypto in Phase 11-Sim
+
+Only `cash_clean`, `sim_usdt`, and `sim_usdc` are exchangeable. Dirty-cash to crypto flows are deferred because they need stronger risk controls and game-balance gates.

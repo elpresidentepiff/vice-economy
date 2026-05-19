@@ -116,8 +116,10 @@ Gate: migration `010_agents.sql` applies cleanly, `/tick/agents` processes activ
 
 ## Phase 11-Sim: Simulated Stablecoin
 
-Status: design drafted.
+Status: implemented; cloud migration and deployed gate pending.
 
 Goal: simulate stablecoin deposits, exchange, spread revenue, and crypto-denominated spending without touching real blockchain assets.
 
-See `docs/engineering/stablecoin-integration-plan.md`.
+The simulation extends immutable ledgers with `sim_usdt` and `sim_usdc`, adds public-readable `crypto_exchange_rates`, records spread into append-only `crypto_spread_revenue`, exposes authenticated `POST /functions/v1/exchange-crypto`, and adds `/tick/crypto` to the economy engine.
+
+Gate: migration `011_sim_crypto.sql` applies cleanly, exchange rates are readable, `/tick/crypto` updates rates with a valid secret and rejects unauthenticated calls, players can exchange clean cash into simulated stablecoin through the Edge Function, insufficient balances fail, spoofed player IDs are ignored, and spread revenue is traceable.
