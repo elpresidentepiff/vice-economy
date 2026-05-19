@@ -8,7 +8,7 @@ Money first. The first deliverable is a secure economy database where authentica
 
 ## Current Scope
 
-This repository currently implements Phase 0 through Phase 7:
+This repository currently implements Phase 0 through Phase 8:
 
 - Monorepo structure
 - Supabase core schema migration
@@ -22,6 +22,7 @@ This repository currently implements Phase 0 through Phase 7:
 - Audit events and system job observability
 - Dirty-money laundering MVP with `/tick/launder`
 - District economy with `/tick/district` and district-specific prices
+- NPC cohort demand simulation with `/tick/npc`
 
 Out of scope for this phase:
 
@@ -147,6 +148,13 @@ curl -X POST http://localhost:3000/tick/district \
   -H "x-tick-secret: replace-me"
 ```
 
+NPC cohort tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/npc \
+  -H "x-tick-secret: replace-me"
+```
+
 Combined tick:
 
 ```bash
@@ -167,4 +175,6 @@ For Railway, set `RAILWAY_DOCKERFILE_PATH=economy-engine/Dockerfile` and provide
 - `audit_events` and `market_price_history` are append-only.
 - District catalog and price snapshots are client-readable but service-writable only.
 - District price history is append-only.
+- NPC cohorts are aggregated, client-readable population groups; clients cannot mutate them.
+- NPC tick logs are append-only.
 - Economy engine runs are tracked in `system_jobs`.

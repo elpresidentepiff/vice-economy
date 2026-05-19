@@ -75,3 +75,15 @@ Postgres generated columns cannot safely depend on volatile time functions. `wor
 ## 019: District Price Updates and History Are Atomic
 
 The economy engine calls `apply_district_price_update`, a service-role-only RPC. The database upserts `district_prices` and inserts `district_price_history` in one transaction.
+
+## 020: NPCs Are Cohorts, Not Actors
+
+Phase 8 simulates population pressure through `npc_cohorts`. A district has a small number of aggregate cohort rows instead of thousands of mutable NPC records.
+
+## 021: NPC Ticks Change District Conditions
+
+NPC demand does not directly edit item prices. `/tick/npc` updates district `demand_multiplier`, `crime_pressure`, and `heat_level`; `/tick/district` later turns those local conditions into price snapshots.
+
+## 022: NPC Tick Logs Are District Summaries
+
+`npc_tick_log` records one append-only summary row per changed district. `cohort_type` is nullable because summary rows represent all cohorts in that district, not a fake enum member.

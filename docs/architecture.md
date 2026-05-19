@@ -50,6 +50,7 @@ The Phase 4 economy engine is a Node.js service intended for Railway. It exposes
 - `POST /tick/market`: protected by `x-tick-secret`.
 - `POST /tick/launder`: protected dirty-money completion tick.
 - `POST /tick/district`: protected district-price tick.
+- `POST /tick/npc`: protected NPC cohort simulation tick.
 - `POST /tick/all`: protected combined market, district, and laundering tick.
 
 The engine uses the Supabase service-role key because it is a trusted server worker, not a client proxy. It writes market price changes directly and records every change in `market_price_history` with a shared `tick_id`.
@@ -82,6 +83,23 @@ flowchart LR
   Tick --> RPC["apply_district_price_update"]
   RPC --> Prices["district_prices snapshot"]
   RPC --> History["district_price_history append"]
+```
+
+## NPC Cohorts
+
+Phase 8 adds `npc_cohorts` and `npc_tick_log`.
+
+NPC simulation is aggregated by district and cohort type, not individual NPC rows. The engine runs `/tick/npc`, computes population-weighted fear, wealth, criminal presence, demand-profile pressure, and active world-event fear deltas, then updates district `demand_multiplier`, `crime_pressure`, and `heat_level` through `apply_npc_district_update`.
+
+The NPC tick intentionally changes district conditions instead of directly changing item prices. The next district tick translates those conditions into district-specific prices.
+
+```mermaid
+flowchart LR
+  Cohorts["npc_cohorts"] --> NPCTick["npc tick"]
+  Events["active world_events"] --> NPCTick
+  NPCTick --> Districts["district demand, heat, crime"]
+  NPCTick --> Log["npc_tick_log append"]
+  Districts --> DistrictTick["district tick"]
 ```
 
 ## Trust Boundaries

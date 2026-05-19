@@ -82,4 +82,16 @@ Gate: `/tick/district` updates district-specific prices, active world events inf
 
 ## Later Phases
 
-Phases 8 through 9 are intentionally not implemented yet. The next phase is NPC cohort demand simulation.
+## Phase 8: NPC Cohort Demand Simulator
+
+Status: implemented; cloud gate pending.
+
+Goal: make district conditions react to simulated population groups without creating individual NPC brains or high-churn NPC tables.
+
+The NPC tick reads aggregate `npc_cohorts`, computes population-weighted fear, wealth, demand-profile pressure, criminal presence, and active world-event fear deltas, then updates each district's `demand_multiplier`, `crime_pressure`, and `heat_level`. Each changed district writes one append-only `npc_tick_log` row.
+
+Gate: `/tick/npc` updates district conditions, a world event changes the affected district's heat/crime response, no unauthenticated tick can run, no client can write cohort state, and `/tick/all` includes market, district, NPC, and laundering ticks.
+
+## Later Phases
+
+Phase 9 is intentionally not implemented yet. The next phase is Unreal integration.
