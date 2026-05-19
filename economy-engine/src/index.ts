@@ -1,5 +1,6 @@
 import express from "express";
 import { loadConfig } from "./config.js";
+import { districtTick } from "./core/districtTick.js";
 import { health } from "./core/health.js";
 import { marketTick } from "./core/marketTick.js";
 import { processLaunderingJobs } from "./core/processLaunderingJobs.js";
@@ -80,6 +81,41 @@ app.post("/tick/launder", async (req, res) => {
   }
 });
 
+app.post("/tick/district", async (req, res) => {
+  const tickSecret = req.header("x-tick-secret");
+  if (!tickSecret || tickSecret !== config.tickSecret) {
+    res.status(401).json({ success: false, error: "unauthorized" });
+    return;
+  }
+
+  const job = await startSystemJob("district_tick", {
+    source: "http",
+    route: "/tick/district",
+  });
+
+  try {
+    const result = await districtTick();
+    await completeSystemJob(job.id, result.tickId, {
+      updated: result.updated,
+      skipped: result.skipped,
+      updates: result.updates,
+    });
+
+    res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    console.error(error);
+    const message = error instanceof Error ? error.message : "district_tick_failed";
+    await failSystemJob(job.id, message).catch((jobError: unknown) => {
+      console.error(jobError);
+    });
+
+    res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
 app.post("/tick/all", async (req, res) => {
   const tickSecret = req.header("x-tick-secret");
   if (!tickSecret || tickSecret !== config.tickSecret) {
@@ -94,10 +130,11 @@ app.post("/tick/all", async (req, res) => {
 
   try {
     const market = await marketTick();
+    const district = await districtTick();
     const laundering = await processLaunderingJobs();
-    await completeSystemJob(job.id, market.tickId, { market, laundering });
+    await completeSystemJob(job.id, market.tickId, { market, district, laundering });
 
-    res.status(200).json({ success: true, market, laundering });
+    res.status(200).json({ success: true, market, district, laundering });
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "all_tick_failed";

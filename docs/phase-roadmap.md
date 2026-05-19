@@ -70,6 +70,16 @@ Goal: introduce dirty cash, player-owned laundering businesses, time-delayed lau
 
 Gate: insufficient dirty cash fails, business capacity failures are enforced, dirty cash decreases immediately, clean cash increases only after completion, fees are deducted, and audit events are written for each money step. Verified through deployed `start-laundering` and Docker `/tick/launder`.
 
+## Phase 7: District Economy
+
+Status: implemented and Docker-verified against cloud Supabase.
+
+Goal: make market prices spatial by district, with local prices reacting to prosperity, security, heat, supply disruption, demand, crime pressure, and active world events.
+
+The district tick reads global `market_items.current_price` as the baseline, applies district and event multipliers, damps movement toward the target, clamps within item price bounds, and writes snapshots plus `district_price_history` through the service-role-only `apply_district_price_update` RPC.
+
+Gate: `/tick/district` updates district-specific prices, active world events influence affected district/item pairs, no unauthenticated tick can run, and district price history records every change. Verified with tick `c32d3130-20b9-4960-a207-471fe5c8a520`, where a temporary Port storm moved `water_bottle` from 274 to 296 and wrote 12 district history rows.
+
 ## Later Phases
 
-Phases 7 through 9 are intentionally not implemented yet. The next phase is district economy.
+Phases 8 through 9 are intentionally not implemented yet. The next phase is NPC cohort demand simulation.

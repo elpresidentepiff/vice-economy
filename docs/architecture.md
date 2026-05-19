@@ -48,6 +48,9 @@ The Phase 4 economy engine is a Node.js service intended for Railway. It exposes
 
 - `GET /health`: public readiness check.
 - `POST /tick/market`: protected by `x-tick-secret`.
+- `POST /tick/launder`: protected dirty-money completion tick.
+- `POST /tick/district`: protected district-price tick.
+- `POST /tick/all`: protected combined market, district, and laundering tick.
 
 The engine uses the Supabase service-role key because it is a trusted server worker, not a client proxy. It writes market price changes directly and records every change in `market_price_history` with a shared `tick_id`.
 
@@ -64,6 +67,22 @@ The economy engine writes a `system_jobs` row for each `/tick/market` run, then 
 Dirty money is stored in the same immutable `wallet_ledger` as clean cash, distinguished by `currency = 'cash_dirty'`.
 
 Players start laundering through `start_laundering`, which immediately inserts a negative dirty-cash ledger row and creates a pending `laundering_jobs` record. The economy engine later calls `complete_laundering` through `/tick/launder`; only then does the player receive clean cash, net of fees.
+
+## District Economy
+
+Phase 7 adds `districts`, `world_events`, `district_prices`, and `district_price_history`.
+
+District prices are snapshots derived from global market prices plus local economic pressure. The engine runs `/tick/district`, reads active world events whose time window contains the current tick, calculates district-specific prices, and calls `apply_district_price_update` for each changed item. The database upserts the district price and appends history in one transaction.
+
+```mermaid
+flowchart LR
+  Market["market_items.current_price"] --> Tick["district tick"]
+  Districts["district modifiers"] --> Tick
+  Events["active world_events"] --> Tick
+  Tick --> RPC["apply_district_price_update"]
+  RPC --> Prices["district_prices snapshot"]
+  RPC --> History["district_price_history append"]
+```
 
 ## Trust Boundaries
 

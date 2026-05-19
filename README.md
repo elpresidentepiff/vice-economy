@@ -8,7 +8,7 @@ Money first. The first deliverable is a secure economy database where authentica
 
 ## Current Scope
 
-This repository currently implements Phase 0 through Phase 2:
+This repository currently implements Phase 0 through Phase 7:
 
 - Monorepo structure
 - Supabase core schema migration
@@ -21,13 +21,10 @@ This repository currently implements Phase 0 through Phase 2:
 - Railway-ready economy engine with `/health` and `/tick/market`
 - Audit events and system job observability
 - Dirty-money laundering MVP with `/tick/launder`
+- District economy with `/tick/district` and district-specific prices
 
 Out of scope for this phase:
 
-- Edge Functions
-- Railway market ticks
-- Dirty money
-- District pricing
 - NPC simulation
 - Unreal integration
 
@@ -143,6 +140,20 @@ curl -X POST http://localhost:3000/tick/launder \
   -H "x-tick-secret: replace-me"
 ```
 
+District tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/district \
+  -H "x-tick-secret: replace-me"
+```
+
+Combined tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/all \
+  -H "x-tick-secret: replace-me"
+```
+
 For Railway, set `RAILWAY_DOCKERFILE_PATH=economy-engine/Dockerfile` and provide `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TICK_SECRET`, and `NODE_ENV=production`.
 
 ## Security Posture
@@ -154,4 +165,6 @@ For Railway, set `RAILWAY_DOCKERFILE_PATH=economy-engine/Dockerfile` and provide
 - Wallet ledger rows are immutable. Corrections must be represented as new reversal entries.
 - Market and inventory catalog data is read-only to clients.
 - `audit_events` and `market_price_history` are append-only.
+- District catalog and price snapshots are client-readable but service-writable only.
+- District price history is append-only.
 - Economy engine runs are tracked in `system_jobs`.

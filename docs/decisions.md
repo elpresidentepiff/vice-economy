@@ -63,3 +63,15 @@ Dirty cash uses `wallet_ledger.currency = 'cash_dirty'`. There are no mutable wa
 ## 016: Laundering Uses the Same Auth Pattern as Purchases
 
 The `start-laundering` Edge Function validates JWTs with an admin client, but calls `start_laundering` with the caller's authorization header. Postgres remains responsible for the `auth.uid()` ownership guard.
+
+## 017: District Prices Are Derived Snapshots
+
+District-specific prices live in `district_prices`, but the global market remains the baseline. The district tick applies local demand, supply disruption, prosperity, security, heat, crime pressure, and active event modifiers, then writes only changed prices.
+
+## 018: World Event Activity Is Queried, Not Generated
+
+Postgres generated columns cannot safely depend on volatile time functions. `world_events.active` is an operator-controlled flag, and the engine also filters by `start_time <= now < end_time`.
+
+## 019: District Price Updates and History Are Atomic
+
+The economy engine calls `apply_district_price_update`, a service-role-only RPC. The database upserts `district_prices` and inserts `district_price_history` in one transaction.
