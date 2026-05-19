@@ -106,13 +106,13 @@ Gate: public REST endpoints pass the smoke test, and an Unreal developer can cop
 
 ## Phase 10: Agent Economy MVP
 
-Status: implemented; cloud migration and live gate pending.
+Status: implemented and Docker-verified against cloud Supabase.
 
 Goal: introduce individual economic agents without weakening player authentication or creating fake Supabase users.
 
 Agents live in `agents`, with separate immutable `agent_wallet_ledger`, `agent_inventory`, and `agent_action_log` tables. The engine runs `/tick/agents`; agents earn small income, buy essentials, make speculative purchases, and migrate away from high-heat districts through service-role-only RPCs.
 
-Gate: migration `010_agents.sql` applies cleanly, `/tick/agents` processes active agents, action rows are logged, agent wallet/inventory changes remain append-only, unauthenticated ticks fail, and `/tick/all` includes market, district, NPC, agents, and laundering.
+Gate: migration `010_agents.sql` applies cleanly, `/tick/agents` processes active agents, action rows are logged, agent wallet/inventory changes remain append-only, unauthenticated ticks fail, and `/tick/all` includes market, district, NPC, agents, and laundering. Verified with tick `8cd1e8ae-ddcf-44ef-b7c1-2da2946fcfd2`, which processed 50 agents and wrote 110 action rows, then a follow-up test tick processed 50 agents and matched 5 action rows exactly.
 
 ## Phase 11-Sim: Simulated Stablecoin
 

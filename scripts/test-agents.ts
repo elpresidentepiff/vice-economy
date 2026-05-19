@@ -37,18 +37,17 @@ async function main() {
   console.log(`ok - agent tick processed ${result.agentsProcessed} agents with ${result.actions} actions`)
 
   const tickId = result.tickId as string
-  const { data: actionRows, error: actionError } = await supabase
+  const { count: actionCount, error: actionError } = await supabase
     .from('agent_action_log')
-    .select('id, agent_id, action, tick_id')
+    .select('id', { count: 'exact', head: true })
     .eq('tick_id', tickId)
-    .limit(10)
 
   if (actionError) {
     throw new Error(`agent action log query failed: ${actionError.message}`)
   }
 
-  if ((actionRows?.length ?? 0) !== result.actions) {
-    throw new Error(`expected ${result.actions} action rows for tick ${tickId}, got ${actionRows?.length ?? 0}`)
+  if ((actionCount ?? 0) !== result.actions) {
+    throw new Error(`expected ${result.actions} action rows for tick ${tickId}, got ${actionCount ?? 0}`)
   }
 
   console.log('ok - agent action log rows match tick result')
