@@ -146,7 +146,12 @@ Deno.serve(async (req: Request) => {
       }, 400)
     }
 
-    return jsonResponse(result as Record<string, unknown>, 200)
+    const resultBody = result as Record<string, unknown>
+    if (resultBody.success === false) {
+      return jsonResponse(resultBody, 400)
+    }
+
+    return jsonResponse(resultBody, 200)
   } catch (error) {
     console.error(error)
     return jsonResponse({ success: false, error: 'internal_error' }, 500)

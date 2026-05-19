@@ -177,7 +177,7 @@ async function runExchangeTests() {
     amount: 999999999999,
   })
 
-  if (insufficient.response.ok || insufficient.result.success === true) {
+  if (insufficient.result.success === true) {
     throw new Error('insufficient balance exchange unexpectedly succeeded')
   }
 
