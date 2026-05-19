@@ -1,0 +1,8 @@
+node_modules
+dist
+economy-engine/node_modules
+economy-engine/dist
+.env
+.git
+*.log
+

@@ -1,0 +1,10 @@
+services:
+  economy-engine:
+    build:
+      context: .
+      dockerfile: economy-engine/Dockerfile
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+

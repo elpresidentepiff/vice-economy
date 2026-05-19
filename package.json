@@ -1,0 +1,18 @@
+{
+  "name": "vice-economy",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "economy-engine"
+  ],
+  "scripts": {
+    "build": "npm --workspace economy-engine run build",
+    "typecheck": "npm --workspace economy-engine run typecheck",
+    "test:buy-item": "tsx scripts/test-buy-item-http.ts"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.86.0",
+    "dotenv": "^17.2.3",
+    "tsx": "^4.20.6"
+  }
+}

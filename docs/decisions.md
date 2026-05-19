@@ -1,0 +1,65 @@
+# Decisions
+
+## 001: Money Uses an Immutable Ledger
+
+Balances are derived from `wallet_ledger` deltas. Rows cannot be updated or deleted. Corrections must be new ledger entries.
+
+## 002: No Client Money Writes
+
+Authenticated clients receive SELECT access to their own wallet ledger rows only. They receive no INSERT, UPDATE, or DELETE policy on `wallet_ledger`.
+
+## 003: Defer Dirty Money
+
+Phase 1 stores clean-cash ledger deltas only. Dirty cash, laundering jobs, fees, and risk scores belong to Phase 6.
+
+## 004: Use Integer Minor Units
+
+Money fields use `bigint` minor units to avoid floating-point drift.
+
+## 005: Keep Phase 1 Catalogs Read-Only
+
+`market_items` and `inventory_items` can be read by authenticated clients but changed only by trusted server roles.
+
+## 006: Serialize Player Money Mutations
+
+Purchase operations use `pg_advisory_xact_lock(hashtextextended(player_id::text, 0))` before reading the ledger balance and inserting money deltas. Future money-changing RPCs must take the same per-player lock.
+
+## 007: Keep Privileged RPC Logic Outside the Public Schema
+
+The public RPC function is a thin invoker wrapper. Privileged writes live in the private schema with a fixed empty search path and fully qualified object names.
+
+## 008: Edge Function Must Preserve Caller Auth Context
+
+`buy-item` validates the JWT with an admin client, but invokes `purchase_item` with a publishable or anon client that forwards the caller's `Authorization` header. This keeps `auth.uid()` inside Postgres equal to the player derived from the JWT.
+
+## 009: Per-Function Deno Configuration
+
+The `buy-item` function owns its `deno.json` dependency map. Shared function-level configuration, including `verify_jwt = true`, lives in `supabase/config.toml`.
+
+## 010: Market Ticks Are Server-Only
+
+The Railway economy engine uses `SUPABASE_SERVICE_ROLE_KEY` and a shared `TICK_SECRET`. It does not accept player identity or client money instructions.
+
+## 011: Damped Market Movement
+
+Market ticks move `current_price` toward `base_price * demand / supply` using `MARKET_DAMPING`, defaulting to `0.05`. Prices are clamped to each item's `min_price` and `max_price`.
+
+## 012: Price Updates and History Are Atomic
+
+The economy engine calls `apply_market_price_update`, a service-role-only RPC. The database updates `market_items.current_price` and inserts `market_price_history` in one transaction.
+
+## 013: Audit Money Mutations in Database Triggers
+
+`wallet_ledger` and `transactions` inserts are audited by Postgres triggers into `audit_events`. This makes the audit trail independent from Edge Function or engine code paths.
+
+## 014: Engine Runs Are System Jobs
+
+Every economy-engine tick records a `system_jobs` row. The job starts before work begins and is completed or failed after the tick finishes.
+
+## 015: Dirty Cash Is a Ledger Currency
+
+Dirty cash uses `wallet_ledger.currency = 'cash_dirty'`. There are no mutable wallet columns. Laundering creates negative dirty-cash entries on start and positive clean-cash entries only on completion.
+
+## 016: Laundering Uses the Same Auth Pattern as Purchases
+
+The `start-laundering` Edge Function validates JWTs with an admin client, but calls `start_laundering` with the caller's authorization header. Postgres remains responsible for the `auth.uid()` ownership guard.
