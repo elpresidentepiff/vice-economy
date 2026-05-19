@@ -94,4 +94,12 @@ Gate: `/tick/npc` updates district conditions, a world event changes the affecte
 
 ## Later Phases
 
-Phase 9 is intentionally not implemented yet. The next phase is Unreal integration.
+## Phase 9: Unreal Integration
+
+Status: implemented and REST-smoke verified; Unreal editor compile pending in the game project.
+
+Goal: provide a minimal C++ Unreal integration for wallet, inventory, market items, district prices, purchases, and laundering intent without committing Unreal assets to this repository.
+
+The `unreal-plugin/` folder contains a runtime `UGameInstanceSubsystem` plugin that calls Supabase REST endpoints and Edge Functions. The repo also includes `docs/unreal-integration-guide.md` and `scripts/test-unreal-integration.ts` for endpoint smoke checks.
+
+Gate: public REST endpoints pass the smoke test, and an Unreal developer can copy or symlink the plugin into the cloud-hosted Unreal project, call `BuyItem`, and see wallet/inventory refresh after providing a test player JWT.

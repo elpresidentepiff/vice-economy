@@ -23,11 +23,11 @@ This repository currently implements Phase 0 through Phase 8:
 - Dirty-money laundering MVP with `/tick/launder`
 - District economy with `/tick/district` and district-specific prices
 - NPC cohort demand simulation with `/tick/npc`
+- Text-only Unreal integration plugin and REST smoke test
 
 Out of scope for this phase:
 
-- NPC simulation
-- Unreal integration
+- Unreal assets, maps, meshes, Blueprints, DDC, and generated project files
 
 ## Repository Layout
 
@@ -42,6 +42,10 @@ vice-economy/
 |   +-- src/
 |   +-- Dockerfile
 |   +-- package.json
++-- unreal-plugin/
++   +-- Source/
++   +-- README.md
++   +-- vice-economy.uplugin
 +-- scripts/
 +-- .env.example
 +-- README.md
@@ -163,6 +167,18 @@ curl -X POST http://localhost:3000/tick/all \
 ```
 
 For Railway, set `RAILWAY_DOCKERFILE_PATH=economy-engine/Dockerfile` and provide `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TICK_SECRET`, and `NODE_ENV=production`.
+
+## Unreal Integration
+
+The repository includes a lightweight Unreal plugin in `unreal-plugin/`. It contains C++ source only. Keep the full Unreal project and all binary assets in a separate asset repository or cloud store.
+
+Run the REST smoke test:
+
+```bash
+npm run test:unreal-integration
+```
+
+See `docs/unreal-integration-guide.md` for setup.
 
 ## Security Posture
 

@@ -8,7 +8,8 @@
   "scripts": {
     "build": "npm --workspace economy-engine run build",
     "typecheck": "npm --workspace economy-engine run typecheck",
-    "test:buy-item": "tsx scripts/test-buy-item-http.ts"
+    "test:buy-item": "tsx scripts/test-buy-item-http.ts",
+    "test:unreal-integration": "tsx scripts/test-unreal-integration.ts"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.86.0",

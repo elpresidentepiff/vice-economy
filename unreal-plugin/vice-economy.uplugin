@@ -1,0 +1,19 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.1.0",
+  "FriendlyName": "Vice Economy",
+  "Description": "Client integration helpers for the Vice Economy server-authoritative backend.",
+  "Category": "Gameplay",
+  "CreatedBy": "Vice Economy",
+  "CanContainContent": false,
+  "IsBetaVersion": true,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "ViceEconomy",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
