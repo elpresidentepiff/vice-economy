@@ -103,3 +103,21 @@ Goal: provide a minimal C++ Unreal integration for wallet, inventory, market ite
 The `unreal-plugin/` folder contains a runtime `UGameInstanceSubsystem` plugin that calls Supabase REST endpoints and Edge Functions. The repo also includes `docs/unreal-integration-guide.md` and `scripts/test-unreal-integration.ts` for endpoint smoke checks.
 
 Gate: public REST endpoints pass the smoke test, and an Unreal developer can copy or symlink the plugin into the cloud-hosted Unreal project, call `BuyItem`, and see wallet/inventory refresh after providing a test player JWT.
+
+## Phase 10: Agent Economy MVP
+
+Status: implemented; cloud migration and live gate pending.
+
+Goal: introduce individual economic agents without weakening player authentication or creating fake Supabase users.
+
+Agents live in `agents`, with separate immutable `agent_wallet_ledger`, `agent_inventory`, and `agent_action_log` tables. The engine runs `/tick/agents`; agents earn small income, buy essentials, make speculative purchases, and migrate away from high-heat districts through service-role-only RPCs.
+
+Gate: migration `010_agents.sql` applies cleanly, `/tick/agents` processes active agents, action rows are logged, agent wallet/inventory changes remain append-only, unauthenticated ticks fail, and `/tick/all` includes market, district, NPC, agents, and laundering.
+
+## Phase 11-Sim: Simulated Stablecoin
+
+Status: design drafted.
+
+Goal: simulate stablecoin deposits, exchange, spread revenue, and crypto-denominated spending without touching real blockchain assets.
+
+See `docs/engineering/stablecoin-integration-plan.md`.

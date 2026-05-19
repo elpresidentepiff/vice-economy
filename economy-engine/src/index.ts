@@ -1,5 +1,6 @@
 import express from "express";
 import { loadConfig } from "./config.js";
+import { agentTick } from "./core/agentTick.js";
 import { districtTick } from "./core/districtTick.js";
 import { health } from "./core/health.js";
 import { marketTick } from "./core/marketTick.js";
@@ -152,6 +153,41 @@ app.post("/tick/npc", async (req, res) => {
   }
 });
 
+app.post("/tick/agents", async (req, res) => {
+  const tickSecret = req.header("x-tick-secret");
+  if (!tickSecret || tickSecret !== config.tickSecret) {
+    res.status(401).json({ success: false, error: "unauthorized" });
+    return;
+  }
+
+  const job = await startSystemJob("agent_tick", {
+    source: "http",
+    route: "/tick/agents",
+  });
+
+  try {
+    const result = await agentTick();
+    await completeSystemJob(job.id, result.tickId, {
+      agentsProcessed: result.agentsProcessed,
+      actions: result.actions,
+      updates: result.updates,
+    });
+
+    res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    console.error(error);
+    const message = error instanceof Error ? error.message : "agent_tick_failed";
+    await failSystemJob(job.id, message).catch((jobError: unknown) => {
+      console.error(jobError);
+    });
+
+    res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
 app.post("/tick/all", async (req, res) => {
   const tickSecret = req.header("x-tick-secret");
   if (!tickSecret || tickSecret !== config.tickSecret) {
@@ -168,10 +204,11 @@ app.post("/tick/all", async (req, res) => {
     const market = await marketTick();
     const district = await districtTick();
     const npc = await npcTick();
+    const agents = await agentTick();
     const laundering = await processLaunderingJobs();
-    await completeSystemJob(job.id, market.tickId, { market, district, npc, laundering });
+    await completeSystemJob(job.id, market.tickId, { market, district, npc, agents, laundering });
 
-    res.status(200).json({ success: true, market, district, npc, laundering });
+    res.status(200).json({ success: true, market, district, npc, agents, laundering });
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "all_tick_failed";

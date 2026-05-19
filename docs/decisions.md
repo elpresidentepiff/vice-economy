@@ -87,3 +87,15 @@ NPC demand does not directly edit item prices. `/tick/npc` updates district `dem
 ## 022: NPC Tick Logs Are District Summaries
 
 `npc_tick_log` records one append-only summary row per changed district. `cohort_type` is nullable because summary rows represent all cohorts in that district, not a fake enum member.
+
+## 023: Agents Are Not Fake Auth Users
+
+`profiles.id` references Supabase Auth users, so autonomous agents do not get synthetic profile rows. Agents use dedicated `agents`, `agent_wallet_ledger`, and `agent_inventory` tables.
+
+## 024: Agent Actions Use Service-Only RPCs
+
+Player RPCs depend on `auth.uid()` and must stay client-authenticated. The economy engine mutates agent state through separate service-role-only RPCs so autonomous behavior cannot weaken player money authorization.
+
+## 025: Stablecoins Start Simulated
+
+Stablecoin mechanics will begin with simulated ledger currencies only. Real USDC or USDT movement requires testnet validation, reconciliation, legal review, and explicit production gates.

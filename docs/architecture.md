@@ -51,7 +51,8 @@ The Phase 4 economy engine is a Node.js service intended for Railway. It exposes
 - `POST /tick/launder`: protected dirty-money completion tick.
 - `POST /tick/district`: protected district-price tick.
 - `POST /tick/npc`: protected NPC cohort simulation tick.
-- `POST /tick/all`: protected combined market, district, and laundering tick.
+- `POST /tick/agents`: protected individual agent economy tick.
+- `POST /tick/all`: protected combined market, district, NPC, agents, and laundering tick.
 
 The engine uses the Supabase service-role key because it is a trusted server worker, not a client proxy. It writes market price changes directly and records every change in `market_price_history` with a shared `tick_id`.
 
@@ -101,6 +102,23 @@ flowchart LR
   NPCTick --> Log["npc_tick_log append"]
   Districts --> DistrictTick["district tick"]
 ```
+
+## Agent Economy
+
+Phase 10 adds individual agents as economic actors, but does not create fake Supabase Auth users.
+
+Player money remains in `wallet_ledger` and still requires authenticated player RPCs. Agent money lives in `agent_wallet_ledger`, with inventory in `agent_inventory` and immutable behavior history in `agent_action_log`. The economy engine calls service-role-only RPCs such as `agent_purchase_item`, `apply_agent_cash_delta`, and `apply_agent_migration`.
+
+```mermaid
+flowchart LR
+  AgentTick["agent tick"] --> AgentRPC["service-only agent RPCs"]
+  AgentRPC --> AgentWallet["agent_wallet_ledger append"]
+  AgentRPC --> AgentInventory["agent_inventory upsert"]
+  AgentRPC --> AgentLog["agent_action_log append"]
+  AgentTick --> Districts["district heat and crime"]
+```
+
+This keeps autonomous simulation separate from player authorization while preserving immutable economic records.
 
 ## Trust Boundaries
 

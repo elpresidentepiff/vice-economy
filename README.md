@@ -24,6 +24,7 @@ This repository currently implements Phase 0 through Phase 8:
 - District economy with `/tick/district` and district-specific prices
 - NPC cohort demand simulation with `/tick/npc`
 - Text-only Unreal integration plugin and REST smoke test
+- Agent economy MVP with `/tick/agents`
 
 Out of scope for this phase:
 
@@ -159,6 +160,13 @@ curl -X POST http://localhost:3000/tick/npc \
   -H "x-tick-secret: replace-me"
 ```
 
+Agent tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/agents \
+  -H "x-tick-secret: replace-me"
+```
+
 Combined tick:
 
 ```bash
@@ -193,4 +201,6 @@ See `docs/unreal-integration-guide.md` for setup.
 - District price history is append-only.
 - NPC cohorts are aggregated, client-readable population groups; clients cannot mutate them.
 - NPC tick logs are append-only.
+- Agents have separate immutable wallets and inventories; player wallet auth is not weakened for autonomous engine actions.
+- Agent wallet ledgers and action logs are append-only.
 - Economy engine runs are tracked in `system_jobs`.
