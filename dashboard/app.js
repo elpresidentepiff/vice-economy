@@ -13,10 +13,12 @@ const elements = {
   avgHeat: document.querySelector('#avg-heat'),
   avgPolice: document.querySelector('#avg-police'),
   agentCount: document.querySelector('#agent-count'),
+  maxGeneration: document.querySelector('#max-generation'),
   districtTable: document.querySelector('#district-table'),
   marketTable: document.querySelector('#market-table'),
   cryptoTable: document.querySelector('#crypto-table'),
   incidentTable: document.querySelector('#incident-table'),
+  evolutionTable: document.querySelector('#evolution-table'),
   agentRoles: document.querySelector('#agent-roles'),
 }
 
@@ -110,8 +112,21 @@ function renderIncidents(rows) {
   `).join('')
 }
 
+function renderEvolution(rows) {
+  elements.evolutionTable.innerHTML = rows.map((row) => `
+    <tr>
+      <td><strong>${row.event_type}</strong></td>
+      <td>${row.generation ?? '-'}</td>
+      <td>${money(row.wealth_snapshot)}</td>
+      <td>${JSON.stringify(row.details ?? {})}</td>
+      <td>${new Date(row.created_at).toLocaleString()}</td>
+    </tr>
+  `).join('')
+}
+
 function renderAgents(rows) {
   elements.agentCount.textContent = rows.length
+  elements.maxGeneration.textContent = Math.max(...rows.map((row) => number(row.generation)), 1)
   const counts = rows.reduce((acc, row) => {
     acc[row.role] = (acc[row.role] || 0) + 1
     return acc
@@ -136,12 +151,13 @@ async function refresh() {
   }
 
   setStatus('Loading live economy state...')
-  const [districts, market, crypto, incidents, agents] = await Promise.all([
+  const [districts, market, crypto, incidents, agents, evolution] = await Promise.all([
     api('districts?select=district_id,name,heat_level,crime_pressure,police_presence,checkpoint_level,supply_disruption&order=district_id.asc'),
     api('market_items?select=item_id,display_name,category,current_price,legal&active=eq.true&order=item_id.asc'),
     api('crypto_exchange_rates?select=from_currency,to_currency,rate,spread_bps&active=eq.true&order=from_currency.asc'),
     api('police_incidents?select=district_id,incident_type,severity,created_at&order=created_at.desc&limit=10'),
-    api('agents?select=id,role,district_id&active=eq.true'),
+    api('agents?select=id,role,district_id,generation,status&active=eq.true&status=eq.active'),
+    api('agent_evolution_log?select=event_type,generation,wealth_snapshot,details,created_at&order=created_at.desc&limit=10'),
   ])
 
   renderDistricts(districts)
@@ -149,6 +165,7 @@ async function refresh() {
   renderCrypto(crypto)
   renderIncidents(incidents)
   renderAgents(agents)
+  renderEvolution(evolution)
   setStatus(`Live as of ${new Date().toLocaleTimeString()}`)
 }
 

@@ -155,3 +155,13 @@ Goal: provide a read-only operator cockpit for market, district, police, crypto,
 The static `dashboard/` app reads Supabase REST endpoints using a publishable key stored in browser local storage. It has no service-role path and no write controls.
 
 Gate: dashboard opens locally, handles missing config safely, reads live public/RLS-safe endpoints with a publishable key, and displays district pressure, market prices, crypto rates, police incidents, and agent role mix. Verified against cloud Supabase after migration `015_dashboard_public_market_reads.sql` exposed active market catalog rows to `anon` with RLS still enforcing read-only access.
+
+## Phase 14: Agent Arena MVP
+
+Status: implemented and cloud-verified.
+
+Goal: let autonomous agents reproduce, mutate, and die on the agent rail without introducing new player mechanics.
+
+The arena tick computes each active agent's total cash-equivalent wealth from `agent_wallet_balances` and `crypto_exchange_rates`. Wealthy agents can reproduce through the service-role-only `spawn_agent` RPC, which deducts a clean-cash reproduction cost, creates a child agent with bounded trait mutation, seeds the child wallet, and logs a birth. Poor agents accrue `low_wealth_streak` and are marked dead through `apply_agent_survival_state` only after repeated low-wealth ticks.
+
+Gate: migration `017_agent_arena.sql` applies cleanly, `/tick/arena` rejects missing secrets, a boosted parent produces a child with traits within the mutation bounds, parent clean cash decreases through `agent_wallet_ledger`, low-wealth agents die only after the configured streak, `agent_evolution_log` is append-only and dashboard-readable, and `/tick/all` includes arena. Verified against cloud Supabase and local Docker with a gate run that produced generation-2 births, logged reproduction costs, and marked a forced low-wealth agent dead.

@@ -172,6 +172,7 @@ export async function agentTick(): Promise<AgentTickResult> {
     .from("agents")
     .select("id, name, district_id, role, ambition, risk_tolerance, current_goal")
     .eq("active", true)
+    .eq("status", "active")
     .order("created_at", { ascending: true });
 
   if (agentError) {

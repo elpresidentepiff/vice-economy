@@ -12,6 +12,7 @@
     "test:agents": "tsx scripts/test-agents.ts",
     "test:crypto": "tsx scripts/test-crypto.ts",
     "test:police": "tsx scripts/test-police.ts",
+    "test:arena": "tsx scripts/test-arena.ts",
     "test:agent-dialogue": "tsx scripts/test-agent-dialogue.ts",
     "test:unreal-integration": "tsx scripts/test-unreal-integration.ts"
   },

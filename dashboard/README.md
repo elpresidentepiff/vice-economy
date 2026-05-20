@@ -9,5 +9,6 @@ Open `index.html` in a browser, paste the Supabase URL and publishable key, then
 - `crypto_exchange_rates`
 - `police_incidents`
 - `agents`
+- `agent_evolution_log`
 
 No service-role key belongs in this dashboard.

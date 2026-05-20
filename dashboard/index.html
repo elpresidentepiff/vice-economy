@@ -45,6 +45,10 @@
           <span>Agents</span>
           <strong id="agent-count">0</strong>
         </article>
+        <article>
+          <span>Max Gen</span>
+          <strong id="max-generation">1</strong>
+        </article>
       </section>
 
       <section class="layout-grid">
@@ -93,6 +97,26 @@
             <h2>Agent Mix</h2>
           </div>
           <div id="agent-roles" class="role-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Evolution Log</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Generation</th>
+                  <th>Wealth</th>
+                  <th>Details</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="evolution-table"></tbody>
+            </table>
+          </div>
         </section>
 
         <section class="panel">

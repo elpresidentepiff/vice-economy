@@ -52,9 +52,10 @@ The Phase 4 economy engine is a Node.js service intended for Railway. It exposes
 - `POST /tick/district`: protected district-price tick.
 - `POST /tick/npc`: protected NPC cohort simulation tick.
 - `POST /tick/agents`: protected individual agent economy tick.
+- `POST /tick/arena`: protected agent reproduction and survival tick.
 - `POST /tick/crypto`: protected simulated crypto exchange-rate tick.
 - `POST /tick/police`: protected police heat and checkpoint tick.
-- `POST /tick/all`: protected combined market, district, NPC, agents, police, crypto, and laundering tick.
+- `POST /tick/all`: protected combined market, district, NPC, agents, arena, police, crypto, and laundering tick.
 
 The engine uses the Supabase service-role key because it is a trusted server worker, not a client proxy. It writes market price changes directly and records every change in `market_price_history` with a shared `tick_id`.
 
@@ -121,6 +122,26 @@ flowchart LR
 ```
 
 This keeps autonomous simulation separate from player authorization while preserving immutable economic records.
+
+## Agent Arena
+
+Phase 14 adds natural selection on the existing agent rail. It does not introduce player mechanics and does not create auth users.
+
+The economy engine runs `/tick/arena` after `/tick/agents`. Active agents with enough total wealth can reproduce once per arena tick by calling the service-role-only `spawn_agent` RPC. The database deducts a clean-cash reproduction cost from the parent agent wallet, creates a child agent in the same district with bounded trait mutation, seeds the child wallet, and appends `agent_evolution_log` plus `agent_action_log` rows in one transaction.
+
+Agents below the survival threshold accrue `low_wealth_streak`. The service-role-only `apply_agent_survival_state` RPC marks an agent dead only after the configured streak and appends a death event. Dead agents are excluded from future agent and arena ticks.
+
+```mermaid
+flowchart LR
+  ArenaTick["arena tick"] --> Wealth["agent_total_wealth"]
+  Wealth --> BirthRPC["spawn_agent"]
+  Wealth --> SurvivalRPC["apply_agent_survival_state"]
+  BirthRPC --> AgentWallet["agent_wallet_ledger append"]
+  BirthRPC --> Agents["agents child row"]
+  BirthRPC --> Evolution["agent_evolution_log append"]
+  SurvivalRPC --> Agents
+  SurvivalRPC --> Evolution
+```
 
 ## Simulated Stablecoin
 

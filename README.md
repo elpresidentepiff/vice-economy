@@ -8,7 +8,7 @@ Money first. The first deliverable is a secure economy database where authentica
 
 ## Current Scope
 
-This repository currently implements Phase 0 through Phase 13A/B:
+This repository currently implements Phase 0 through Phase 14:
 
 - Monorepo structure
 - Supabase core schema migration
@@ -29,6 +29,7 @@ This repository currently implements Phase 0 through Phase 13A/B:
 - Police heat enforcement with `/tick/police` and `POST /functions/v1/bribe-police`
 - Agent dialogue sessions with `POST /functions/v1/agent-dialogue`
 - Static read-only operator dashboard in `dashboard/`
+- Agent arena evolution with `/tick/arena`, births, deaths, mutation, and immutable evolution logs
 
 Out of scope for this phase:
 
@@ -221,6 +222,13 @@ curl -X POST http://localhost:3000/tick/police \
   -H "x-tick-secret: replace-me"
 ```
 
+Arena tick:
+
+```bash
+curl -X POST http://localhost:3000/tick/arena \
+  -H "x-tick-secret: replace-me"
+```
+
 Combined tick:
 
 ```bash
@@ -263,6 +271,7 @@ The dashboard expects active market catalog rows to be public-readable through R
 - NPC tick logs are append-only.
 - Agents have separate immutable wallets and inventories; player wallet auth is not weakened for autonomous engine actions.
 - Agent wallet ledgers and action logs are append-only.
+- Agent arena births and deaths are service-role only, logged in append-only `agent_evolution_log`, and never touch player wallets.
 - Simulated crypto balances are ledger currencies, not mutable wallet fields.
 - Exchange spread revenue is recorded in `crypto_spread_revenue`; clients cannot read or write that table.
 - Police pressure is a district-level economic modifier. Clients can read district police state and incidents, but only the economy engine can update enforcement.

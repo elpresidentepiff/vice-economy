@@ -139,3 +139,15 @@ The operator dashboard is static and uses a publishable Supabase key only. It re
 ## 035: Active Market Catalog Is Public Readable
 
 The dashboard needs active market prices without an operator login. Active `market_items` rows are safe to expose because clients cannot write them and inactive catalog rows remain hidden.
+
+## 036: Agent Evolution Stays On The Agent Rail
+
+Births, deaths, and mutation use `agents`, `agent_wallet_ledger`, and `agent_evolution_log` only. The arena never creates fake player profiles and never writes player wallet tables.
+
+## 037: Reproduction Is A Clean-Cash Sink
+
+An agent can reproduce only if total cash-equivalent wealth crosses the threshold and the parent has enough `cash_clean` to pay the reproduction cost. This makes reproduction auditable and prevents simulated crypto or dirty cash from silently minting descendants without a clean-money cost.
+
+## 038: Death Requires A Streak
+
+Agents are marked dead only after repeated low-wealth arena ticks. A single bad tick increments `low_wealth_streak`, but natural selection requires sustained failure before the agent is deactivated.
