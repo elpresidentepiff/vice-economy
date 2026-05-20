@@ -8,7 +8,7 @@ Money first. The first deliverable is a secure economy database where authentica
 
 ## Current Scope
 
-This repository currently implements Phase 0 through Phase 12:
+This repository currently implements Phase 0 through Phase 13A/B:
 
 - Monorepo structure
 - Supabase core schema migration
@@ -27,6 +27,8 @@ This repository currently implements Phase 0 through Phase 12:
 - Agent economy MVP with `/tick/agents`
 - Simulated stablecoin exchange with `/tick/crypto` and `POST /functions/v1/exchange-crypto`
 - Police heat enforcement with `/tick/police` and `POST /functions/v1/bribe-police`
+- Agent dialogue sessions with `POST /functions/v1/agent-dialogue`
+- Static read-only operator dashboard in `dashboard/`
 
 Out of scope for this phase:
 
@@ -136,6 +138,18 @@ curl -X POST "$SUPABASE_URL/functions/v1/bribe-police" \
 
 The bribe RPC deducts `cash_clean` through `wallet_ledger`, records a `bribe` transaction, lowers existing `player_heat`, and writes an immutable `bribe_events` row.
 
+Agent dialogue stores player-agent conversation history and agent memory without changing money:
+
+```bash
+curl -X POST "$SUPABASE_URL/functions/v1/agent-dialogue" \
+  -H "Authorization: Bearer $USER_ACCESS_TOKEN" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"agent_id":"...","message":"Any work around here?","player_id":"spoofed-id-is-ignored"}'
+```
+
+By default, `agent-dialogue` uses a deterministic local response writer. Set `AGENT_DIALOGUE_PROVIDER=openai` and `OPENAI_API_KEY` to use the optional OpenAI Responses API path.
+
 ## Economy Engine
 
 Run locally:
@@ -228,6 +242,12 @@ npm run test:unreal-integration
 
 See `docs/unreal-integration-guide.md` for setup.
 
+## Operator Dashboard
+
+Open `dashboard/index.html` in a browser, paste the Supabase URL and publishable key, and connect. The dashboard is static and read-only. Never put a service-role key into the dashboard.
+
+The dashboard expects active market catalog rows to be public-readable through RLS. Migration `015_dashboard_public_market_reads.sql` grants `anon` read access to active `market_items` only.
+
 ## Security Posture
 
 - RLS is enabled on all public tables.
@@ -247,4 +267,6 @@ See `docs/unreal-integration-guide.md` for setup.
 - Exchange spread revenue is recorded in `crypto_spread_revenue`; clients cannot read or write that table.
 - Police pressure is a district-level economic modifier. Clients can read district police state and incidents, but only the economy engine can update enforcement.
 - Player heat and bribe events are player-readable only. Bribes are clean-cash ledger sinks and cannot spoof `player_id`.
+- Agent conversations, messages, and memories are player-readable only for the owning player and append-only where appropriate.
+- The operator dashboard uses only publishable-key REST reads. Service-role keys must stay server-side.
 - Economy engine runs are tracked in `system_jobs`.

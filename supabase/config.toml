@@ -9,3 +9,6 @@ verify_jwt = true
 
 [functions.bribe-police]
 verify_jwt = true
+
+[functions.agent-dialogue]
+verify_jwt = true

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vice Economy Ops</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Vice Economy Ops</h1>
+        <p id="status">Configure Supabase to read the live city.</p>
+      </div>
+      <button id="refresh" class="icon-button" title="Refresh dashboard" aria-label="Refresh dashboard">↻</button>
+    </header>
+
+    <main>
+      <section class="config-panel">
+        <label>
+          Supabase URL
+          <input id="supabase-url" placeholder="https://ltbsxbvfsxtnharjvqcm.supabase.co">
+        </label>
+        <label>
+          Publishable key
+          <input id="supabase-key" type="password" placeholder="sb_publishable... or anon key">
+        </label>
+        <button id="save-config">Connect</button>
+      </section>
+
+      <section class="summary-grid" aria-label="City summary">
+        <article>
+          <span>Districts</span>
+          <strong id="district-count">0</strong>
+        </article>
+        <article>
+          <span>Avg Heat</span>
+          <strong id="avg-heat">0</strong>
+        </article>
+        <article>
+          <span>Avg Police</span>
+          <strong id="avg-police">0</strong>
+        </article>
+        <article>
+          <span>Agents</span>
+          <strong id="agent-count">0</strong>
+        </article>
+      </section>
+
+      <section class="layout-grid">
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>District Pressure</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>District</th>
+                  <th>Heat</th>
+                  <th>Crime</th>
+                  <th>Police</th>
+                  <th>Checkpoint</th>
+                  <th>Supply</th>
+                </tr>
+              </thead>
+              <tbody id="district-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Market Prices</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Legal</th>
+                </tr>
+              </thead>
+              <tbody id="market-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Agent Mix</h2>
+          </div>
+          <div id="agent-roles" class="role-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Crypto Rates</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pair</th>
+                  <th>Rate</th>
+                  <th>Spread</th>
+                </tr>
+              </thead>
+              <tbody id="crypto-table"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel wide">
+          <div class="panel-heading">
+            <h2>Police Incidents</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>District</th>
+                  <th>Type</th>
+                  <th>Severity</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="incident-table"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -164,6 +164,29 @@ flowchart LR
   BribeRPC --> Bribes["bribe_events append"]
 ```
 
+## Agent Dialogue
+
+Phase 13A adds a voice layer without allowing dialogue to mutate money or inventory.
+
+`POST /functions/v1/agent-dialogue` validates the player's JWT, derives the player from Supabase Auth, loads the target active agent, and creates or continues an `agent_conversation_sessions` row. It appends the player message, appends the agent response, writes a lightweight `agent_memory_events` summary, and records provider metadata in `agent_dialogue_events`.
+
+The function defaults to a local deterministic response writer so the game can keep working without model-provider availability. If `AGENT_DIALOGUE_PROVIDER=openai` and `OPENAI_API_KEY` are configured, the same endpoint can call OpenAI and request structured JSON. The output contract remains the same either way.
+
+```mermaid
+flowchart LR
+  Client["Game client"] --> Edge["agent-dialogue Edge Function"]
+  Edge --> Auth["Supabase Auth getUser"]
+  Edge --> Agent["agents profile"]
+  Edge --> Sessions["agent_conversation_sessions"]
+  Edge --> Messages["agent_conversation_messages append"]
+  Edge --> Memory["agent_memory_events append"]
+  Edge --> Provider["local or OpenAI dialogue"]
+```
+
+## Operator Dashboard
+
+Phase 13B adds `dashboard/`, a static browser dashboard for operators. It uses only a Supabase publishable key and public/client-readable REST endpoints. It intentionally avoids service-role keys and does not expose write controls.
+
 ## Trust Boundaries
 
 - Browser or game client: untrusted.

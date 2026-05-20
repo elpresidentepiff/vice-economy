@@ -123,3 +123,19 @@ Police response changes district `police_presence`, `checkpoint_level`, and `sup
 ## 031: Player Heat Is Separate From District Heat
 
 District `heat_level` drives public enforcement pressure. `player_heat` is per-player and per-district, readable only by that player, and can only be mutated by trusted database functions or service-role setup paths.
+
+## 032: Dialogue Cannot Move Money
+
+Agent dialogue records conversation, mood, intent, and memory. It does not execute purchases, bribes, laundering, inventory changes, or agent migrations. Economic actions must continue through existing RPCs and ticks.
+
+## 033: Dialogue Provider Is Optional
+
+`agent-dialogue` defaults to a deterministic local response writer. Model-backed dialogue is enabled only by environment configuration, keeping the endpoint available even when external AI providers are absent.
+
+## 034: Dashboard Is Read-Only
+
+The operator dashboard is static and uses a publishable Supabase key only. It reads public or RLS-protected data and never accepts a service-role key or write action.
+
+## 035: Active Market Catalog Is Public Readable
+
+The dashboard needs active market prices without an operator login. Active `market_items` rows are safe to expose because clients cannot write them and inactive catalog rows remain hidden.

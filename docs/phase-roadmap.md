@@ -135,3 +135,23 @@ The police tick reads district heat, crime pressure, and security, then updates 
 Players can call `POST /functions/v1/bribe-police` to reduce existing `player_heat` in a district. The Edge Function derives the player from the JWT, forwards the caller auth context to `bribe_police`, and ignores any spoofed `player_id` in the body. The database deducts clean cash through `wallet_ledger`, records a `bribe` transaction, updates `player_heat`, and writes `bribe_events`.
 
 Gate: migration `012_police_heat.sql` applies cleanly, `/tick/police` rejects missing secrets and updates district enforcement with a valid secret, bribes reduce player heat while deducting clean cash, insufficient funds fail, spoofed player IDs are ignored, and police/bribe logs are immutable. Verified against cloud Supabase with tick `81639d6e-1056-4355-9f80-185cd3b20d3d`, which updated all 5 districts and wrote police incidents. The bribe test reduced Port player heat from 20 to 15, deducted 500 `cash_clean`, wrote one `bribe` transaction, one `police_bribe` ledger row, and one `bribe_events` row.
+
+## Phase 13A: Agent Dialogue Foundation
+
+Status: implemented and cloud-verified.
+
+Goal: give agents a voice and memory without allowing dialogue to move money or mutate economy state.
+
+The `agent-dialogue` Edge Function derives player identity from the JWT, loads an active agent, creates or continues a conversation session, appends player and agent messages, records a memory summary, and logs provider metadata. The default provider is deterministic local dialogue. OpenAI-backed structured dialogue is optional behind `AGENT_DIALOGUE_PROVIDER=openai` and `OPENAI_API_KEY`.
+
+Gate: migration `014_agent_dialogue.sql` applies cleanly, `agent-dialogue` deploys with `verify_jwt=true`, unauthenticated calls fail, authenticated calls persist two message rows and one memory row, spoofed player IDs are ignored, and players can read only their own sessions/messages/memories. Verified against cloud Supabase with local provider dialogue for `Agent 1`; the test wrote one session, two messages, one memory row, and one `agent_dialogue_events` row.
+
+## Phase 13B: Metrics Dashboard
+
+Status: implemented and cloud-verified.
+
+Goal: provide a read-only operator cockpit for market, district, police, crypto, and agent state.
+
+The static `dashboard/` app reads Supabase REST endpoints using a publishable key stored in browser local storage. It has no service-role path and no write controls.
+
+Gate: dashboard opens locally, handles missing config safely, reads live public/RLS-safe endpoints with a publishable key, and displays district pressure, market prices, crypto rates, police incidents, and agent role mix. Verified against cloud Supabase after migration `015_dashboard_public_market_reads.sql` exposed active market catalog rows to `anon` with RLS still enforcing read-only access.
